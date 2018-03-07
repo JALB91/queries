@@ -1,0 +1,17 @@
+{
+  "name": "queries",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "es6-promise-pool": "^2.5.0",
+    "flickr-sdk": "^3.7.0",
+    "flickrapi": "^0.6.0",
+    "json2csv": "^4.0.1"
+  }
+}
