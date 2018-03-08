@@ -10,13 +10,15 @@ const fields = ['owner', 'id', 'ownername', 'title', 'description', 'dateupload'
 const opts = { 'fields': fields, 'header': false };
 let photos = [];
 
-function queryPage (page) {
+const currentYear = 2007;
+
+function queryPageOfYear (year, page) {
     console.log("Querying page: " + page);
     return Promise.resolve(
         flickr.photos.search({
         extras: "description, date_upload, date_taken, owner_name, geo, tags, url_o",
-        min_upload_date: "01/01/2004 00:00:00",
-        max_upload_date: "31/12/2017 00:00:00",
+        min_upload_date: year + "-01-01",
+        max_upload_date: year + "-31-12",
         woe_id: 12578034,
         page: page
         })
@@ -37,25 +39,29 @@ function queryPage (page) {
     });
 }
 
+function queryYear(year) {
+    console.log('Starting queries for year: ' + year);
+    flickr.photos.search({
+        min_upload_date: year + "-01-01",
+        max_upload_date: year + "-31-12",
+        woe_id: 12578034
+    }).then(function (res) {
+        const pages = res.body['photos']['pages'];
+        console.log('Starting query for ' + pages + ' pages');
+        console.log(res.body['photos']['total'] + ' total');
+        for (let i = 1; i <= pages; i++) {
+            queue.add(() => queryPageOfYear(year, i));
+        }
+        queue.onIdle()
+        .then((result) => { console.log('Ended queries for year: ' + year); writeResults(); })
+        .catch((reason) => console.log('Failed because: ' + reason));
+    }, function(reason) {
+        console.error(err);
+        console.log("ERROR FIRST");
+    });
+}
 
-flickr.photos.search({
-    min_upload_date: "01/01/2004 00:00:00",
-    max_upload_date: "31/12/2017 00:00:00",
-    woe_id: 12578034
-}).then(function (res) {
-    const pages = res.body['photos']['pages'];
-    for (let i = 1; i <= pages; i++) {
-        queue.add(() => queryPage(i));
-    }
-    queue.onIdle()
-    .then(fetchResults)
-    .catch((reason) => console.log('Failed because: ' + reason));
-}, function(reason) {
-    console.error(err);
-    console.log("ERROR FIRST");
-});
-
-function fetchResults() {
+function writeResults() {
     console.log('Writing file');
     let csv = "";
 
@@ -69,9 +75,11 @@ function fetchResults() {
         csv += json2csv(photo, opts) + '\n';
     })
 
-    fs.writeFile("./test.csv", csv, function(err) {
+    fs.writeFile("./queries_" + currentYear + ".csv", csv, function(err) {
         if (err) {
             return console.log(err);
         }
     });
 }
+
+queryYear(currentYear);
