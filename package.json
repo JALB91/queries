@@ -9,9 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "es6-promise-pool": "^2.5.0",
     "flickr-sdk": "^3.7.0",
     "flickrapi": "^0.6.0",
-    "json2csv": "^4.0.1"
+    "json2csv": "^4.0.1",
+    "p-queue": "^2.3.1"
   }
 }
