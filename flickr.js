@@ -75,7 +75,7 @@ function writeResults() {
         csv += json2csv(photo, opts) + '\n';
     })
 
-    fs.writeFile("./queries_" + currentYear + ".csv", csv, function(err) {
+    fs.writeFile("./outputs/queries_" + currentYear + ".csv", csv, function(err) {
         if (err) {
             return console.log(err);
         }
