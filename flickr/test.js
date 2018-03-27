@@ -9,11 +9,11 @@ const queue = new PQueue({ concurrency: 50 });
 const MAX_RESULT = 4000;
 
 //2.167964, 41.375023, 2.171805, 41.377326
-const startLat = 2.167964;
-const startLon = 41.375023;
-// const endLat = 2.171805;
-const endLat = 2.231805;
-const endLon = 41.477326;
+//0.117273, 40.511265, 3.358239, 42.897671
+const startLat = 0.117273;
+const startLon = 40.511265;
+const endLat = 3.358239;
+const endLon = 42.897671;
 
 const year = 2015;
 
@@ -22,8 +22,8 @@ const opts = { 'fields': fields, 'header': false };
 
 function getDefaultRequestParams(year, bbox) {
     return {
-        'min_taken_date': year + "-01-01",
-        'max_taken_date': year + "-12-31",
+        'min_upload_date': year + "-01-01",
+        'max_upload_date': year + "-12-31",
         'bbox': bbox,
         'per_page': 500
     }

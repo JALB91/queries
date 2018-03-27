@@ -29,3 +29,6 @@ node_modules
 
 # Directory with query results
 outputs
+
+# Build dir
+dist
