@@ -17,22 +17,21 @@ export default class bbox {
         this.insideSection = null;
 
         this.section = section;
-        this.distLat = this.roundSix((this.eLat - this.sLat) * this.section);
-        this.distLon = this.roundSix((this.eLon - this.sLon) * this.section);
+        this.distLat = this.round((this.eLat - this.sLat) * this.section);
+        this.distLon = this.round((this.eLon - this.sLon) * this.section);
         this.x = 0;
         this.y = 0;
 
         this.currentSLat = this.sLat;
         this.currentSLon = this.sLon;
-        this.currentELat = this.roundSix(this.currentSLat + this.distLat);
-        this.currentELon = this.roundSix(this.currentSLon + this.distLon);
+        this.currentELat = this.round(this.currentSLat + this.distLat);
+        this.currentELon = this.round(this.currentSLon + this.distLon);
 
-        console.log('ADD');
-        // console.log(`From: ${this.currentSLat}, ${this.currentSLon} ----- To: ${this.currentELat}, ${this.currentELon}`);
+        this.ended = false;
     }
 
-    roundSix(number) {
-        return Math.round(number * Math.pow(10, 6)) / Math.pow(10, 6);
+    round(number) {
+        return Math.round(number * Math.pow(10, 20)) / Math.pow(10, 20);
     }
 
     addSection() {
@@ -46,10 +45,9 @@ export default class bbox {
     removeSectionIfNeeded() {
         let result = this.isEnded();
         if (this.insideSection && this.insideSection.removeSectionIfNeeded()) {
-            console.log('REMOVE');
             this.insideSection = null;
-            result = this.isEnded();
             this.goToNextSection();
+            result = this.isEnded();
         }
         return result;
     }
@@ -62,6 +60,7 @@ export default class bbox {
 
         if (Math.abs(this.currentELat - this.eLat) < this.distLat * 0.5) {
             if (Math.abs(this.currentELon - this.eLon) < this.distLon * 0.5) {
+                this.ended = true;
                 return;
             }
             this.x = 0;
@@ -70,12 +69,11 @@ export default class bbox {
             this.x++;
         }
 
-        console.log('NEXT');
-        
-        this.currentSLat = this.roundSix(this.sLat + (this.distLat * this.x));
-        this.currentSLon = this.roundSix(this.sLon + (this.distLon * this.y));
-        this.currentELat = this.roundSix(this.currentSLat + this.distLat);
-        this.currentELon = this.roundSix(this.currentSLon + this.distLon);
+
+        this.currentSLat = this.round(this.sLat + (this.distLat * this.x));
+        this.currentSLon = this.round(this.sLon + (this.distLon * this.y));
+        this.currentELat = this.round(this.currentSLat + this.distLat);
+        this.currentELon = this.round(this.currentSLon + this.distLon);
     }
 
     getCurrentSection() {
@@ -94,9 +92,15 @@ export default class bbox {
         }
     }
 
+    getDebugString() {
+        if (this.insideSection) {
+            return this.insideSection.getDebugString();
+        } else {
+            return `x1: ${this.currentSLat}, x2: ${this.currentELat} | y1: ${this.currentSLon}, y2: ${this.currentELon}`;
+        }
+    }
+
     isEnded() {
-        return (!this.insideSection && 
-            Math.abs(this.currentELat - this.eLat) < this.distLat * 0.5 && 
-            Math.abs(this.currentELon - this.eLon) < this.distLon * 0.5);
+        return (!this.insideSection && this.ended);
     }
 }
