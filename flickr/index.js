@@ -2,60 +2,77 @@ import * as flickr from './flickr';
 import * as params from './params';
 import { DAY_IN_MONTHS } from './months';
 import bbox from './bbox';
+const cli = require('cli');
+
+const options = cli.parse({
+    year: ['y', 'Year to query', 'int'],
+    startMonth: ['sm', 'Month to query from', 'int', 1],
+    endMonth: ['em', 'Month to query to', 'int', 12]
+});
+
+if (!options.hasOwnProperty('year')) {
+    cli.fatal('No year specified');
+}
 
 const MAX_RESULT = 4000;
-const year = 2015;
+const year = options.year;
+
+const startMonth = options.startMonth;
+const endMonth = options.endMonth;
+
+
+let totalSteps = 0
+
+Object.keys(DAY_IN_MONTHS).forEach(key => {
+    if (parseInt(key) >= startMonth && parseInt(key) <= endMonth) {
+        totalSteps += parseInt(DAY_IN_MONTHS[key]);
+    }
+});
+
+let currentStep = 0;
 
 async function main() {
-    for (let month = 12; month <= 12; month++) {
+    cli.info(`Starting queries for year ${year}`);
+    for (let month = startMonth; month <= endMonth; month++) {
         let monthKey = month < 10 ? '0' + month : month.toString();
-        console.log(`Querying month ${monthKey}`);
+        cli.info(`Querying month ${monthKey}`);
         for (let day = 1; day <= parseInt(DAY_IN_MONTHS[monthKey]); day++) {
             let dayKey = (day < 10 ? '0' + day : day.toString());
-            console.log(`Querying day ${dayKey}`);
-
+            cli.info(`Querying day ${dayKey}`);
+            cli.progress(currentStep / totalSteps);
             const box = new bbox(0.117273, 40.511265, 3.358239, 42.897671);
-            // const test = new bbox(0.0, 0.0, 100.0, 100.0);
             let iter = 0;
             let sections = 1;
             do {
-                console.log('.'.repeat(Math.max(sections, 0)));
                 const ended = box.removeSectionIfNeeded() && iter > 0;
-                // test.removeSectionIfNeeded();
-                // console.log(test.getDebugString());
-                // console.log(box.getDebugString());
-
                 if (ended) break;
-
                 iter++;
                 let parameters = params.getDefaultRequestParams(year, monthKey, dayKey, dayKey, box);
                 try {
                     const result = await flickr.getQueryResult(parameters);
-                    // console.log(result['body']['photos']['total']);
-                    if (parseInt(result['body']['photos']['total']) >= MAX_RESULT && monthKey !== '07' && dayKey !== '15') {
+                    if (parseInt(result['body']['photos']['total']) >= MAX_RESULT && sections < 40) {
                         box.addSection();
-                        // test.addSection();
                         sections += 4;
                     } else {
                         for (let i = 1; i <= parseInt(result['body']['photos']['pages']); i++) {
                             parameters = params.getDefaultRequestParams(year, monthKey, dayKey, dayKey, box, i);
-                            flickr.addToQueue(parameters);
+                            flickr.addToQueue(year, monthKey, parameters);
                         }
                         sections -= 1;
                         box.goToNextSection();
-                        // test.goToNextSection();
                     }
                 } catch (e) {
-                    console.warn(e);
+                    cli.error(e);
                     break;
                 }
             } while (!box.isEnded());
+            currentStep++;
         }
+
+        flickr.startQueries(year, monthKey, () => {
+            cli.info(`Ended queries for month ${monthKey}`);
+        });
     }
-    
-    flickr.startQueries(() => {
-        console.log('ENDED');
-    });
 };
 
 main();

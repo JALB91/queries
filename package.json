@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "babel": "^6.23.0",
+    "cli": "^1.0.1",
     "flickr-sdk": "^3.7.0",
     "flickrapi": "^0.6.0",
     "googleplaces": "^0.6.1",
