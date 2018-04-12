@@ -21,7 +21,7 @@ const startMonth = options.startMonth;
 const endMonth = options.endMonth;
 
 
-let totalSteps = 0
+let totalSteps = 0;
 
 Object.keys(DAY_IN_MONTHS).forEach(key => {
     if (parseInt(key) >= startMonth && parseInt(key) <= endMonth) {
@@ -32,14 +32,13 @@ Object.keys(DAY_IN_MONTHS).forEach(key => {
 let currentStep = 0;
 
 async function main() {
-    cli.info(`Starting queries for year ${year}`);
     for (let month = startMonth; month <= endMonth; month++) {
-        let monthKey = month < 10 ? '0' + month : month.toString();
-        cli.info(`Querying month ${monthKey}`);
+        const monthKey = month < 10 ? '0' + month : month.toString();
         for (let day = 1; day <= parseInt(DAY_IN_MONTHS[monthKey]); day++) {
-            let dayKey = (day < 10 ? '0' + day : day.toString());
-            cli.info(`Querying day ${dayKey}`);
-            cli.progress(currentStep / totalSteps);
+            const dayKey = (day < 10 ? '0' + day : day.toString());
+            cli.spinner(`Querying ${year}-${monthKey}-${dayKey}`, true);
+            process.stdout.moveCursor(0, - 1);
+            cli.spinner(`Querying ${year}-${monthKey}-${dayKey}`);
             const box = new bbox(0.117273, 40.511265, 3.358239, 42.897671);
             let iter = 0;
             let sections = 1;
@@ -73,6 +72,7 @@ async function main() {
             cli.info(`Ended queries for month ${monthKey}`);
         });
     }
+    cli.spinner('Querying Done', true);
 };
 
 main();
