@@ -24,6 +24,7 @@ export const addToQueue = (year, month, params) => {
 export const startQueries = (year, month, callback) => {
     if (!queues.hasOwnProperty(month)) {
         console.warn(`${month} Not found`);
+        return;
     }
     data.init_file(year, month);
     queues[month].start();
